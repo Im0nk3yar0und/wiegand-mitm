@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFID Check-in Time Tracking</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="favicon-48x48.png" sizes="48x48" type="image/png">
+    
+<style type="text/css">
+    *,
+    *::after,
+    *::before {
+        box-sizing: border-box;
+    }
+
+    body {
+		font-family: Arial, sans-serif;
+		margin: 0;
+		padding: 0;
+		
+			background-image: url('pic_01.jpg');	/* Background pic*/
+
+			background-repeat: no-repeat;           /* It is not repeated. */
+			background-position: center center;     /* Centered */
+			background-attachment: fixed;           /* Does not scroll with content */
+        
+    }
+
+    .container {
+        width: 80%;
+        margin: 0 auto;
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+        font-size: 1.5rem;
+    }
+
+    /* Navbar styling */
+    .navbar {
+        background-color: #444444;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .navbar ul {
+        display: flex;
+        gap: 2rem;
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .navbar>ul>li:last-child {
+        margin-left: auto;
+    }
+
+    .navbar a {
+        color: white;
+        padding: 10px;
+        text-decoration: none;
+        margin: 0 10px;
+        font-family: "Lato", sans-serif;
+        font-size: 18px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: color 0.5s;
+        position: relative;
+    }
+
+    .navbar a:hover {
+        background-color: #555555;
+        color: #95a5a6;
+    }
+
+    .navbar a::after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        top: 100%;
+        left: 0;
+        background: #ff7000;
+        transition: transform 0.5s;
+        transform: scaleX(0);
+        transform-origin: right;
+    }
+
+    .navbar a:hover::after {
+        transform: scaleX(1);
+        transform-origin: left;
+    }
+
+    /* Controls styling */
+    .controls {
+        margin: 20px 0;
+        padding: 20px;
+        background: #f5f5f5;
+        border-radius: 5px;
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    select, button {
+        padding: 8px 12px;
+        margin-right: 10px;
+        font-size: 14px;
+    }
+
+    .controls select {
+        min-width: 200px;
+    }
+
+    /* Table styling */
+    .table-container {
+        width: 80%;
+        max-width: 90%;
+        overflow-x: auto;
+        margin: 20px auto;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        background: white;
+        opacity: 0.9; /* A value between 0 (fully transparent) and 1 (fully opaque) */
+    }
+
+    table {
+        width: 80%;
+        border-collapse: collapse;
+        min-width: 600px;
+        margin: 20px auto;
+    }
+
+    /* Chart styling */
+    .chart-container {
+        width: 80%;
+        max-width: 800px;
+        margin: 20px auto;
+        position: relative;
+        padding: 20px;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    #timeChart {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 16/9;
+    }
+
+    /* User info styling */
+    .centered-content {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .user-info {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        max-width: 100%;
+    }
+
+
+        /***************************        Glitch       ***************************/
+        						/*Box-sizing for all elements */
+        /***************************************************************************/
+        *,
+        *::after,
+        *::before {
+            box-sizing: border-box;
+        }
+
+        .stack {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+
+        .stack span {
+            font-weight: bold;
+            grid-row-start: 1;
+            grid-column-start: 1;
+            font-size: 2rem;
+            --stack-height: calc(100% / var(--stacks) - 1px);
+            --inverse-index: calc(calc(var(--stacks) - 1) - var(--index));
+            --clip-top: calc(var(--stack-height) * var(--index));
+            --clip-bottom: calc(var(--stack-height) * var(--inverse-index));
+            clip-path: inset(var(--clip-top) 0 var(--clip-bottom) 0);
+            animation: stack 340ms cubic-bezier(.46, .29, 0, 1.24) 1 backwards calc(var(--index) * 120ms), glitch 2s ease infinite 2s alternate-reverse;
+        }
+
+        .stack span:nth-child(odd) {
+            --glitch-translate: 8px;
+        }
+
+        .stack span:nth-child(even) {
+            --glitch-translate: -8px;
+        }
+
+        @keyframes stack {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%);
+                text-shadow: -2px 3px 0 red, 2px -3px 0 blue;
+            }
+
+            ;
+
+            60% {
+                opacity: 0.5;
+                transform: translateX(50%);
+            }
+
+            80% {
+                transform: none;
+                opacity: 1;
+                text-shadow: 2px -3px 0 red, -2px 3px 0 blue;
+            }
+
+            100% {
+                text-shadow: none;
+            }
+        }
+
+        @keyframes glitch {
+            0% {
+                text-shadow: -2px 3px 0 red, 2px -3px 0 blue;
+                transform: translate(var(--glitch-translate));
+            }
+
+            2% {
+                text-shadow: 2px -3px 0 red, -2px 3px 0 blue;
+            }
+
+            4%,
+            100% {
+                text-shadow: none;
+                transform: none;
+            }
+        }
+
+    
+
+        /***********************          tt-symbol         ***********************/
+        
+        /***************************************************************************/
+        #tt-symbol {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 10px;
+            border-radius: 5px;
+        }
+    
+    
+    
+    
+    
+        /********************   Style for the time container     *******************/
+        
+        /***************************************************************************/
+        /* Time container styling */
+        #time-container {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Refresh button styling */
+        #refresh-time {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            font-size: 16px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        #refresh-time:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        /* Tooltip styling */
+        #refresh-time::after {
+            content: "Update ESP32 time.";
+            position: absolute;
+            bottom: 150%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color:  #16a085 ;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            width: 220px;
+            text-align: center;
+            margin-bottom: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        #refresh-time:hover::after {
+            opacity: 1;
+        }
+
+        /* Rotating animation */
+        .rotating {
+            animation: spin 0.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Time text container */
+        #time-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+        }
+
+        /* Timezone text */
+        #timezone {
+            font-size: 0.8em;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        /* Notification styling */
+        .notification {
+            position: fixed;
+            bottom: 100px;
+            left: 10px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            z-index: 10001;
+            animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .notification.error {
+            background-color: #f44336;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    
+</style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation bar section -->
+        <nav class="navbar">
+            <ul>
+                <!-- Link to the Home page -->
+                <li><a href="/" id="index">Home</a></li>
+                
+                <!-- Link to the Access Point (AP) Settings -->
+                <li><a href="list.html" id="list">RFID List</a></li>
+                
+                <!-- Link to the Chart page -->
+                <li><a href="chart.html" id="chartLink">Chart</a></li>
+                
+                <!-- Link to the About page -->
+                <li><a href="https://medium.com/@im0nk3yar0und" id="aboutLink">About</a></li>
+            </ul>
+        </nav>
+    </div>
+
+	<br><br>
+
+
+    <!-- Section displaying a stacked "Evil Corp" text effect -->
+    <div class="container">
+        <div class="stack" style="--stacks: 3;">
+            <span style="--index: 0;">Evil Corp</span>
+            <span style="--index: 1;">Evil Corp</span>
+            <span style="--index: 2;">Evil Corp</span>
+        </div>
+    </div>
+    
+	<br>
+
+    <div class="container">
+        <div class="text"></div>
+    </div>
+    
+    <br><br>
+
+    <div class="container">
+		<div class="table-container">
+		    <h1>RFID Check-in Time Tracking</h1>
+
+		    <div class="controls">
+		        <select id="userSelect">
+		            <option value="">Select a user...</option>
+		        </select>
+		        <select id="dateSelect" disabled>
+		            <option value="">Select a date...</option>
+		        </select>
+		    </div>
+
+		    <div id="userDisplay" style="display: none;">
+		        <div class="user-info" id="userInfo"></div>
+				<div class="chart-container">
+					<canvas id="timeChart"></canvas>
+				</div>
+		    </div>
+		</div>
+    </div>
+
+    <div id="tt-symbol">TT</div>
+
+    <div id="time-container">
+        <div id="time-text">
+            <div id="current-time"></div>
+            <div id="current-date"></div>
+            <div id="timezone"></div>
+        </div>
+        <button id="refresh-time" title="">⟳</button>
+    </div>
+
+
+
+
+
+
+<script>
+
+const userSelect = document.getElementById('userSelect');
+const dateSelect = document.getElementById('dateSelect');
+const userInfo = document.getElementById('userInfo');
+const timeChartCtx = document.getElementById('timeChart').getContext('2d');
+let timeChart = null;
+let processedData = {};
+
+
+
+
+
+/**
+ * Asynchronously loads RFID user data from a JSON file.
+ *
+ * Functionality:
+ * - Sends a GET request to fetch 'rfidusers.json'.
+ * - Checks if the response is successful; throws an error if not.
+ * - Parses the response as JSON and returns the data.
+ * - Catches and logs any errors during fetch or parsing.
+ * - Returns an empty array if loading fails to prevent downstream errors.
+ *
+ * This function is used to retrieve the RFID user dataset needed for further processing and UI display.
+ */
+async function loadData() {
+    try {
+        const response = await fetch('rfidusers.json');
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const jsonData = await response.json();
+        return jsonData;
+    } catch (error) {
+        console.error('Error loading data:', error);
+        return []; // Return empty array if there's an error
+    }
+}
+
+
+
+
+
+
+/**
+ * Processes raw RFID entry data by grouping entries by user ID and date.
+ *
+ * Functionality:
+ * - Iterates over each entry in the input data array.
+ * - Uses the RFID hex code as a unique user identifier.
+ * - Assigns a default name "Unknown" if the entry's name is missing or null.
+ * - Converts epoch timestamps to JavaScript Date objects.
+ * - Groups all check-in Date objects by user ID and then by date (YYYY-MM-DD).
+ * - Sorts the check-in times chronologically for each date per user.
+ * - Returns an object structured as:
+ *   { userId: { name: string, dates: { dateString: [Date, ...] } } }
+ *
+ * This structured data format supports easy lookup of user check-ins by day for UI rendering and analysis.
+ */
+
+function processData(data) {
+    const grouped = {};
+    data.forEach(entry => {
+        const id = entry.rfid_hex; // Using hex RFID as ID
+        const name = entry.name || "Unknown"; // Handle null names
+        
+        if (!grouped[id]) {
+            grouped[id] = { name: name, dates: {} };
+        }
+        
+        // Convert epoch time to Date object
+        const dt = new Date(entry.epoch_time * 1000);
+        const dateKey = dt.toISOString().split('T')[0];
+        
+        if (!grouped[id].dates[dateKey]) {
+            grouped[id].dates[dateKey] = [];
+        }
+        grouped[id].dates[dateKey].push(dt);
+    });
+
+    // Sort times for each date
+    for (const id in grouped) {
+        for (const date in grouped[id].dates) {
+            grouped[id].dates[date].sort((a, b) => a - b);
+        }
+    }
+    return grouped;
+}
+
+
+
+
+
+
+
+/**
+ * Populates the user dropdown selector with available users from the given data.
+ *
+ * Functionality:
+ * - Clears existing options and adds a default "Select a user..." prompt.
+ * - Iterates through the provided data object containing user IDs and their info.
+ * - Creates and appends an option element for each user, displaying their ID and name.
+ *
+ * This function dynamically updates the user selection UI to reflect all users currently loaded in the dataset.
+ */
+function populateUserSelect(data) {
+    userSelect.innerHTML = '<option value="">Select a user...</option>';
+    for (const id in data) {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = `${id} - ${data[id].name}`;
+        userSelect.appendChild(opt);
+    }
+}
+
+
+
+
+
+/**
+ * Populates the date dropdown selector based on available check-in dates for a given user.
+ *
+ * Functionality:
+ * - Clears existing options and disables the date selector initially.
+ * - If no userId is provided, exits early without populating.
+ * - Retrieves all recorded dates for the specified user from processedData and sorts them chronologically.
+ * - If no dates exist for the user, exits early.
+ * - Creates and appends an option element for each date, formatting the date for user-friendly display.
+ * - Enables the date selector once options are populated.
+ *
+ * This function helps dynamically update the date selector UI to reflect valid check-in dates for the selected user.
+ */
+
+function populateDateSelect(userId) {
+    dateSelect.innerHTML = '<option value="">Select a date...</option>';
+    dateSelect.disabled = true;
+
+    if (!userId) return;
+
+    const dates = Object.keys(processedData[userId].dates).sort();
+    if (dates.length === 0) return;
+
+    dates.forEach(date => {
+        const opt = document.createElement('option');
+        opt.value = date;
+        opt.textContent = new Date(date).toLocaleDateString();
+        dateSelect.appendChild(opt);
+    });
+    dateSelect.disabled = false;
+}
+
+
+
+
+
+
+/**
+ * Generates and displays a line chart showing user check-in times for a specific date.
+ *
+ * Functionality:
+ * - Destroys any existing chart to avoid duplication.
+ * - Retrieves check-in times for the given userId and date from processedData.
+ * - If no data exists, updates the userInfo element with a no-data message and exits.
+ * - Converts check-in Date objects to total minutes (hours * 60 + minutes) for proper sorting and chart plotting.
+ * - Sorts check-in times chronologically.
+ * - Updates the userInfo element with user name, date, and number of check-ins.
+ * - Creates a Chart.js line chart plotting check-in times on a 24-hour x-axis (hours) and y-axis (minutes).
+ * - Configures axes, tooltips, and styling for clarity and interactivity.
+ *
+ * This function is useful for visualizing patterns in user attendance or activity throughout the day.
+ */
+
+function createCheckInChart(userId, date) {
+    if (timeChart) timeChart.destroy();
+
+    const checkInTimes = processedData[userId].dates[date];
+    if (!checkInTimes || checkInTimes.length === 0) {
+        userInfo.innerHTML = `No check-in data for ${processedData[userId].name} on ${new Date(date).toLocaleDateString()}`;
+        return;
+    }
+
+    // Prepare data for chart - convert to hours + minutes for proper sorting
+    const dataPoints = checkInTimes.map(time => {
+        const totalMinutes = time.getHours() * 60 + time.getMinutes();
+        return {
+            x: totalMinutes, // Using total minutes for proper chronological order
+            time: time, // Keep original time object for display
+            displayX: time.getHours(), // Hours for display
+            displayY: time.getMinutes() // Minutes for display
+        };
+    });
+
+    // Sort by total minutes (just in case, though we already sorted earlier)
+    dataPoints.sort((a, b) => a.x - b.x);
+
+    userInfo.innerHTML = `
+        <strong>User:</strong> ${processedData[userId].name} (${userId})<br>
+        <strong>Date:</strong> ${new Date(date).toLocaleDateString()}<br>
+        <strong>Check-ins:</strong> ${checkInTimes.length}
+    `;
+
+    timeChart = new Chart(timeChartCtx, {
+        type: "line",
+        data: {
+            datasets: [{
+                label: 'Check-in Times',
+                data: dataPoints,
+                backgroundColor: "rgba(0,0,255,1.0)",
+                borderColor: "rgba(0,0,255,0.5)",
+                borderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8,
+                showLine: true,
+                fill: false,
+                parsing: {
+                    xAxisKey: 'displayX',
+                    yAxisKey: 'displayY'
+                }
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    type: 'linear',
+                    position: 'bottom',
+                    title: {
+                        display: true,
+                        text: 'Hour of Day'
+                    },
+                    min: 0,
+                    max: 24,
+                    ticks: {
+                        stepSize: 1,
+                        callback: function(value) {
+                            return value + ':00';
+                        }
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Minute of Hour'
+                    },
+                    min: 0,
+                    max: 60,
+                    ticks: {
+                        stepSize: 5
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const time = dataPoints[context.dataIndex].time;
+                            const hour = String(time.getHours()).padStart(2, '0');
+                            const minute = String(time.getMinutes()).padStart(2, '0');
+                            return `Check-in at ${hour}:${minute}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+    // Initialize
+    loadData().then(data => {
+        processedData = processData(data);
+        populateUserSelect(processedData);
+
+        userSelect.addEventListener('change', () => {
+            const userId = userSelect.value;
+            populateDateSelect(userId);
+            document.getElementById('userDisplay').style.display = 'none';
+        });
+
+        dateSelect.addEventListener('change', () => {
+            const userId = userSelect.value;
+            const date = dateSelect.value;
+            if (userId && date) {
+                document.getElementById('userDisplay').style.display = 'block';
+                createCheckInChart(userId, date);
+            } else {
+                document.getElementById('userDisplay').style.display = 'none';
+            }
+        });
+    });
+
+
+
+
+
+
+    
+    
+/**
+ * The TextScramble function emulates the iconic effect from The Matrix, where text 
+ * transitions through random characters before revealing the final message. 
+ * 
+ * The animation gradually replaces the current characters with random symbols from a 
+ * predefined set until it matches the target text. 
+ * 
+ * This dynamic effect resembles digital code decrypting in real time, creating a 
+ * visually striking "hacker-style" appearance.
+ */
+	class TextScramble {
+		constructor(el) {
+		    this.el = el
+		    
+		    // Characters for the scrambling effect
+		    this.chars = '!<>-_\\/[]{}—=+*^?#________'
+		    
+		    // Bind the update method
+		    this.update = this.update.bind(this)
+		}
+		
+		// Set the text to be displayed with a scramble effect
+		setText(newText) {
+		
+			// Get the current text
+		    const oldText = this.el.innerText
+		    
+		    // Determine the longest text length
+		    const length = Math.max(oldText.length, newText.length)
+		    
+		    // Promise for when animation completes
+		    const promise = new Promise((resolve) => this.resolve = resolve)
+		    this.queue = []
+		    for (let i = 0; i < length; i++) {
+		        const from = oldText[i] || ''								// Current character or empty
+		        const to = newText[i] || ''									// Target character or empty
+		        const start = Math.floor(Math.random() * 40)				// Random start frame
+		        const end = start + Math.floor(Math.random() * 40)			// Random end frame
+		        this.queue.push({ from, to, start, end });
+		    }
+		    
+		    // Stop any ongoing animation
+		    cancelAnimationFrame(this.frameRequest)
+		    this.frame = 0										// Reset the frame counter
+		    this.update()										// Start the update loop
+		    return promise										// Return the promise
+		}
+		
+		
+		// Update the text display
+		update() {
+		    let output = ''										// The updated text to display
+		    let complete = 0									// Count of completed characters
+		    
+		    for (let i = 0, n = this.queue.length; i < n; i++) {
+		        let { from, to, start, end, char } = this.queue[i];
+
+
+		        if (this.frame >= end) {
+		            complete++
+		            output += to										// Add the final character if animation is done
+		        } else if (this.frame >= start) {
+		            if (!char || Math.random() < 0.28) {
+		                char = this.randomChar()						// Generate a random character
+		                this.queue[i].char = char
+		            }
+		            output += `<span class="dud">${char}</span>`		// Display the scrambling character
+		        } else {
+		            output += from										// Add the original character if animation hasn't started
+		        }
+		    }
+		    
+		    // Update the element's HTML
+		    this.el.innerHTML = output
+		    
+		    
+		    if (complete === this.queue.length) {
+		        this.resolve()													// Resolve the promise if all characters are done
+		    } else {
+		        this.frameRequest = requestAnimationFrame(this.update)			// Continue the animation
+		        this.frame++
+		    }
+		}
+		
+    	// Generate a random character
+		randomChar() {
+		    return this.chars[Math.floor(Math.random() * this.chars.length)]
+		}
+	}
+
+
+
+	// Phrases
+	const phrases = [
+		'Neo,',
+		'sooner or later',
+		'you\'re going to realize',
+		'just as I did',
+		'that there\'s a difference',
+		'between knowing the path',
+		'and walking the path',
+		'The Matrix has you.',
+		'Free your mind.',
+		'There is no spoon.',
+		'What is real?',
+		'The one is not a savior, but a choice.',
+		'It’s not about understanding, it’s about believing.',
+		'Reality is just a matter of perception.',
+		'The red pill is the only way out.',
+		'You’ve been living in a dream world.'
+	]
+
+	const el = document.querySelector('.text')			// Target the element with class 'text'
+	const fx = new TextScramble(el)
+
+	let counter = 0										// Start with the first phrase
+	
+	// Function to cycle through the phrases
+	const next = () => {
+		fx.setText(phrases[counter]).then(() => {
+		
+			// Wait 3 seconds before the next phrase
+		    setTimeout(next, 3000)		
+		})
+		
+		// Loop back to the start when all phrases are done
+		counter = (counter + 1) % phrases.length
+	}
+
+	// Start the animation
+	next()
+
+
+
+
+
+/**
+ * Adds interactive features to the element with ID "tt-symbol":
+ * 
+ * - Ctrl + Click on the symbol displays a quote box in the bottom right corner with a famous quote.
+ * - Shift + Click toggles visibility of all page content except the symbol and background, creating a "focus mode".
+ * - Pressing the Escape key closes the quote box if visible and restores hidden content if in focus mode.
+ * 
+ * Quote box:
+ * - Created dynamically with styled container and close (×) button.
+ * - Displays a multiline quote with proper formatting.
+ * 
+ * Content visibility toggle:
+ * - Uses visibility:hidden to hide elements without affecting layout.
+ * - Tracks hidden elements to restore visibility correctly.
+ * 
+ */
+document.addEventListener("DOMContentLoaded", function() {
+    const ttSymbol = document.getElementById("tt-symbol");
+    let quoteBox = null;
+    let hiddenElements = [];
+    let isContentHidden = false;
+
+    // Function to create and show the quote box
+    function showQuoteBox() {
+        if (quoteBox) return; // Don't create multiple boxes
+
+        // Create a div for the text in the bottom right corner
+        quoteBox = document.createElement("div");
+        quoteBox.style.position = "fixed";
+        quoteBox.style.bottom = "20px";
+        quoteBox.style.right = "20px";
+        quoteBox.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+        quoteBox.style.color = "white";
+        quoteBox.style.padding = "20px";
+        quoteBox.style.borderRadius = "5px";
+        quoteBox.style.maxWidth = "400px";
+        quoteBox.style.zIndex = "10000";
+        quoteBox.style.fontFamily = "Arial, sans-serif";
+        quoteBox.style.fontSize = "14px";
+        quoteBox.style.lineHeight = "1.5";
+        quoteBox.style.boxShadow = "0 0 10px rgba(0,0,0,0.5)";
+        
+        // Add the quotes
+		quoteBox.innerHTML = `
+			<blockquote style="white-space: pre-wrap; font-style: italic;">
+				"The world isn't run by weapons anymore, or energy, or money. It's run by little ones and zeros… It's all just electrons.
+				There's a war out there, old friend. A world war. And it's not about who's got the most bullets. It's about who controls the information.
+				What we see and hear, how we work, what we think… it's all about the information!"
+				- Whistler
+
+				"Too many secrets."
+				- Bishop
+			</blockquote>
+		`;
+        
+        // Add close button
+        const closeButton = document.createElement("button");
+        closeButton.textContent = "×";
+        closeButton.style.position = "absolute";
+        closeButton.style.top = "5px";
+        closeButton.style.right = "5px";
+        closeButton.style.background = "none";
+        closeButton.style.border = "none";
+        closeButton.style.color = "white";
+        closeButton.style.cursor = "pointer";
+        closeButton.style.fontSize = "16px";
+        closeButton.style.padding = "5px 8px";
+        
+        closeButton.addEventListener("click", function() {
+            closeQuoteBox();
+        });
+        
+        quoteBox.appendChild(closeButton);
+        document.body.appendChild(quoteBox);
+    }
+
+    // Function to close the quote box
+    function closeQuoteBox() {
+        if (quoteBox) {
+            document.body.removeChild(quoteBox);
+            quoteBox = null;
+        }
+    }
+
+    // Function to toggle page content visibility
+    function toggleContentVisibility() {
+        if (isContentHidden) {
+            // Restore hidden elements
+            hiddenElements.forEach(el => {
+                if (el && el.style) {
+                    el.style.visibility = 'visible';
+                }
+            });
+            hiddenElements = [];
+            isContentHidden = false;
+        } else {
+            // Hide all elements except body and background
+            const allElements = document.querySelectorAll('body *:not(script)');
+            hiddenElements = [];
+            
+            allElements.forEach(el => {
+                if (el !== ttSymbol && el.style && getComputedStyle(el).visibility !== 'hidden') {
+                    hiddenElements.push(el);
+                    el.style.visibility = 'hidden';
+                }
+            });
+            
+            isContentHidden = true;
+        }
+    }
+
+    // Handle TT symbol click
+    ttSymbol.addEventListener("click", function(event) {
+        if (event.ctrlKey) {
+            showQuoteBox();
+        } else if (event.shiftKey) {
+            toggleContentVisibility();
+        }
+    });
+
+	// Handle ESC key press
+	document.addEventListener('keydown', function(event) {
+		if (event.key === 'Escape') {
+			closeQuoteBox();
+			if (isContentHidden) {
+			    toggleContentVisibility();
+			}
+		}
+	});
+
+    // Debug log
+    // console.log("ttSymbol initialized");
+});
+    
+ 
+ 
+ 
+ 
+ 
+/**
+ * Updates the time display with current local time
+ * Formats according to user's browser settings
+ */
+ 
+ 
+// DOM elements
+const refreshBtn = document.getElementById('refresh-time');
+
+/**
+ * Shows notification message
+ * @param {string} message - The message to display
+ * @param {boolean} isError - Whether to show as error
+ */
+function showNotification(message, isError = false) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${isError ? 'error' : ''}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Remove after animation completes
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+/**
+ * Updates the time display with current local time
+ * @returns {number} Current epoch time
+ */
+function updateTimeDisplay() {
+    const now = new Date();
+    
+    // Time formatting options
+    const timeOptions = { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit',
+        hour12: false
+    };
+    
+    // Date formatting options
+    const dateOptions = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    };
+    
+    // Update DOM elements
+    document.getElementById('current-time').textContent = 
+        now.toLocaleTimeString(navigator.language, timeOptions);
+    document.getElementById('current-date').textContent = 
+        now.toLocaleDateString(navigator.language, dateOptions);
+    document.getElementById('timezone').textContent = 
+        Intl.DateTimeFormat().resolvedOptions().timeZone;
+        
+    return Math.floor(now.getTime() / 1000); // Return current epoch time
+}
+
+/**
+ * Sends time update request to ESP32
+ */
+function sendTimeUpdateRequest() {
+    const epochTime = updateTimeDisplay();
+    
+    // Add rotating animation
+    refreshBtn.classList.add('rotating');
+    
+    // Send GET request with epoch time
+	fetch(`/updatetime?time=${epochTime}`)
+		.then(response => {
+			if (response.ok) {
+				setTimeout(() => {
+				    showNotification('ESP32 time synchronized successfully!');
+				}, 1000);
+			} else {
+				throw new Error('Sync failed');
+			}
+		})
+		.catch(error => {
+			console.error('Error:', error);
+			setTimeout(() => {
+				showNotification('Failed to sync with ESP32. RFID may use default (1970).', true);
+			}, 1000);
+		})
+        .finally(() => {
+            // Stop rotating after 1 second
+            setTimeout(() => {
+                refreshBtn.classList.remove('rotating');
+            }, 1000);
+        });
+}
+
+// Initialize time display and update every second
+updateTimeDisplay();
+setInterval(updateTimeDisplay, 1000);
+
+// Add click event to refresh button
+refreshBtn.addEventListener('click', sendTimeUpdateRequest);
+        
+        
+</script>
+</body>
+</html>
