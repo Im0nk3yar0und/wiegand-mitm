@@ -23,7 +23,7 @@ The ESP-07 Wiegand MITM device operates as a bridge between the RFID reader and 
 
 Initially prototyped on an Arduino Uno for validation, the project moved to the ESP-07 for 3.3V logic compatibility and Wi-Fi support.
 
-![](pic_06.png)
+![](pic_06.jpeg)
 
 &nbsp;
 
