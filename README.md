@@ -56,9 +56,19 @@ Initially prototyped on an Arduino Uno for validation, the project moved to the 
 ---
 ## ## Circuit Connections
 
+This setup demonstrates how an ESP-07 microcontroller is used to intercept Wiegand signals from an RFID reader and optionally spoof or relay them to an access control system.
+- The RFID reader outputs Wiegand DATA0 and DATA1 lines, which are connected to the ESP-07.
+- The ESP-07 reads these signals and can either process, modify, or forward them.
+- It then sends the Wiegand data to the access controller, effectively acting as a man-in-the-middle or spoofing device.
+- Power is supplied via a buck converter, which steps down 12V from the access control system to 3.3V needed for the ESP-07.
+- All components (reader, ESP-07, controller) share a common ground (GND) to ensure signal integrity.
+- The EN and RST pins of the ESP-07 are pulled high to enable normal operation.
+
+This configuration allows for custom logic on the ESP-07 to manipulate or simulate RFID tags being sent to the access control unit.
+
+&nbsp;
+
 ![](pic_08.png)
-
-
 
 &nbsp;
 
