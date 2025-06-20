@@ -11,6 +11,8 @@ This tool supports sniffing, spoofing, replay, and DoS attacks against RFID read
 
 &nbsp;
 
+![](pic_07.png)
+
 ---
 ## 🔧 How It Works
 
