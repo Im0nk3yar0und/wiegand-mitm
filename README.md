@@ -54,7 +54,15 @@ Initially prototyped on an Arduino Uno for validation, the project moved to the 
 &nbsp;
 
 ---
+## ## Circuit Connections
 
+![](pic_08.png)
+
+
+
+&nbsp;
+
+---
 ## Web Interface
 
 ### Control Center (`index.html`)
